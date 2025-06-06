@@ -10,7 +10,7 @@ const babelLoaderConfiguration = {
   // Add every directory that needs to be compiled by Babel during the build.
   include: [
     path.resolve(appDirectory, 'index.web.js'), // Entry point for web
-    path.resolve(appDirectory, 'App.tsx'), // Your main App component
+    path.resolve(appDirectory, 'App.web.tsx'), // Your main App component
     path.resolve(appDirectory, 'src'), // Your source code
     path.resolve(appDirectory, 'node_modules/react-native-vector-icons'), // Example for a specific module
     // Add other simp_modules you want to transpile for web, if any.
