@@ -12,6 +12,7 @@
     "build:web": "webpack --mode production --config webpack.config.js"
   },
   "dependencies": {
+    "@100mslive/hms-video-store": "^0.12.35",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.3",
