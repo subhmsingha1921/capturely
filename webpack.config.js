@@ -82,6 +82,7 @@ module.exports = {
     compress: true,
     port: 8080, // Port for the development server
     hot: true, // Enable Hot Module Replacement
+    allowedHosts: 'all',
   },
   mode: process.env.NODE_ENV || 'development', // Set mode to development or production
 };
