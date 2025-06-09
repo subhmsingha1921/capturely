@@ -17,6 +17,30 @@ import {
   selectVideoTrackByID,
 } from '@100mslive/hms-video-store';
 
+// Import the functions you need from the SDKs you need
+import {initializeApp} from 'firebase/app';
+import {CameraType, CameraView} from 'expo-camera';
+
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: 'AIzaSyCmObxp7iTlgt6gYSfhC2dqVHEoB2a16BQ',
+  authDomain: 'findit-ai-d93c6.firebaseapp.com',
+  databaseURL:
+    'https://findit-ai-d93c6-default-rtdb.asia-southeast1.firebasedatabase.app',
+  projectId: 'findit-ai-d93c6',
+  storageBucket: 'findit-ai-d93c6.firebasestorage.app',
+  messagingSenderId: '669473493302',
+  appId: '1:669473493302:web:f23deceadadbef92b9a397',
+  measurementId: 'G-G9KQLTWJE2',
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
 // Initialize HMS Store outside of the component to avoid re-initialization
 const hmsManager = new HMSReactiveStore();
 hmsManager.triggerOnSubscribe();
@@ -108,6 +132,11 @@ const App = () => {
   const [localAudioEnabled, setLocalAudioEnabled] = useState(true);
   const [localVideoEnabled, setLocalVideoEnabled] = useState(true);
   const [peers, setPeers] = useState([]);
+  const [facing, setFacing] = useState<CameraType>('back');
+
+  function toggleCameraFacing() {
+    setFacing(current => (current === 'back' ? 'front' : 'back'));
+  }
 
   // Listen to connection state
   useEffect(() => {
@@ -233,7 +262,13 @@ const App = () => {
           </View>
         </View>
       )}
-
+      <CameraView style={styles.camera} facing={facing}>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
+            <Text style={styles.text}>Flip Camera</Text>
+          </TouchableOpacity>
+        </View>
+      </CameraView>
       {/* Control Bar */}
       {isConnected && (
         <View style={styles.controlBar}>
@@ -342,28 +377,29 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   peersContainer: {
+    flex: 1, // Allow peers container to take available space
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
     alignItems: 'center',
   },
   peerVideo: {
-    height: 250,
-    width: 250,
-    borderRadius: 125,
+    flex: 1, // Occupy whole area within its container
+    width: '100%', // Ensure it takes full width of its container
+    height: '100%', // Ensure it takes full height of its container
+    borderRadius: 8, // Small border radius
     objectFit: 'cover',
-    marginBottom: 10,
     backgroundColor: 'black', // fallback background
   },
   localPeerVideo: {
     transform: 'scaleX(-1)',
   },
   noVideoPlaceholder: {
-    height: 250,
-    width: 250,
-    borderRadius: 125,
+    flex: 1, // Occupy whole area within its container
+    width: '100%', // Ensure it takes full width of its container
+    height: '100%', // Ensure it takes full height of its container
+    borderRadius: 8, // Small border radius
     backgroundColor: '#546e7a',
-    marginBottom: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -375,11 +411,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     color: 'white',
+    marginTop: 5, // Add some space above the name
   },
   peerTile: {
-    padding: 10,
+    flex: 1, // Allow each peer tile to take available space
+    minWidth: 300, // Minimum width for each video tile
+    maxWidth: '50%', // Max width to allow two videos side-by-side
+    aspectRatio: 16 / 9, // Maintain aspect ratio for video
     margin: 5,
     alignItems: 'center',
+    justifyContent: 'center', // Center content vertically
+    backgroundColor: '#37474f', // Background for the tile
+    borderRadius: 8,
+    overflow: 'hidden', // Hide overflow for rounded corners
   },
   controlBar: {
     flexDirection: 'row',
@@ -415,6 +459,25 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
     textAlign: 'center',
+  },
+  camera: {
+    flex: 1,
+  },
+  buttonContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: 'transparent',
+    margin: 64,
+  },
+  button: {
+    flex: 1,
+    alignSelf: 'flex-end',
+    alignItems: 'center',
+  },
+  text: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
   },
 });
 

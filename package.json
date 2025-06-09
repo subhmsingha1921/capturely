@@ -14,6 +14,9 @@
   "dependencies": {
     "@100mslive/hms-video-store": "^0.12.35",
     "@100mslive/react-native-hms": "^1.11.0",
+    "expo-camera": "^16.1.7",
+    "firebase": "^11.9.0",
+    "process": "^0.11.10",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.3",

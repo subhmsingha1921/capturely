@@ -1,28 +1,37 @@
-// webpack.config.js
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack'); // Make sure this is imported
 
 const appDirectory = path.resolve(__dirname);
 const {presets} = require(`${appDirectory}/babel.config.js`);
 
 const babelLoaderConfiguration = {
   test: /\.(js|jsx|ts|tsx)$/,
-  // Add every directory that needs to be compiled by Babel during the build.
   include: [
-    path.resolve(appDirectory, 'index.web.js'), // Entry point for web
-    path.resolve(appDirectory, 'App.web.tsx'), // Your main App component
-    path.resolve(appDirectory, 'src'), // Your source code
-    path.resolve(appDirectory, 'node_modules/react-native-vector-icons'), // Example for a specific module
-    // Add other simp_modules you want to transpile for web, if any.
-    // path.resolve(appDirectory, 'node_modules/another-react-native-module'),
+    path.resolve(appDirectory, 'index.web.js'),
+    path.resolve(appDirectory, 'App.web.tsx'),
+    path.resolve(appDirectory, 'src'),
+    path.resolve(appDirectory, 'node_modules/react-native-vector-icons'),
+    // Ensure Expo modules are included for transpilation
+    path.resolve(appDirectory, 'node_modules/expo'),
+    path.resolve(appDirectory, 'node_modules/expo-camera'),
+    path.resolve(appDirectory, 'node_modules/expo-modules-core'),
+    path.resolve(appDirectory, 'node_modules/@expo'),
   ],
-  exclude: /node_modules\/(?!react-native-vector-icons)/, // Exclude most node_modules, but include specific ones if needed
+  exclude: filepath => {
+    return (
+      /node_modules/.test(filepath) &&
+      !/node_modules\/(react-native-vector-icons|expo|expo-camera|expo-modules-core|@expo)/.test(
+        filepath,
+      )
+    );
+  },
   use: {
     loader: 'babel-loader',
     options: {
       cacheDirectory: true,
-      presets, // Use your existing babel.config.js presets
-      plugins: ['react-native-web'], // Important for aliasing react-native to react-native-web
+      presets,
+      plugins: ['react-native-web'],
     },
   },
 };
@@ -33,18 +42,18 @@ const imageLoaderConfiguration = {
     loader: 'url-loader',
     options: {
       name: '[name].[ext]',
-      esModule: false, // Important for compatibility with some image usages
+      esModule: false,
     },
   },
 };
 
 module.exports = {
   entry: {
-    app: path.join(appDirectory, 'index.web.js'), // Your web entry point
+    app: path.join(appDirectory, 'index.web.js'),
   },
   output: {
-    filename: 'bundle.web.js', // Output bundle file name
-    path: path.resolve(appDirectory, 'web/dist'), // Output directory
+    filename: 'bundle.web.js',
+    path: path.resolve(appDirectory, 'web/dist'),
   },
   resolve: {
     extensions: [
@@ -56,33 +65,44 @@ module.exports = {
       '.ts',
       '.web.tsx',
       '.tsx',
-    ], // Order of resolution
+    ],
     alias: {
-      'react-native$': 'react-native-web', // Alias react-native to react-native-web
-      // You might need to add aliases for specific libraries if they don't work out of the box
-      // 'react-native-maps': 'react-native-web-maps', (example if using maps)
+      'react-native$': 'react-native-web',
+    },
+    // Add fallback for 'process' and 'buffer' if you encounter further issues
+    // For many older packages, 'process' might need to be resolved to 'process/browser'
+    // or you might need a polyfill for 'buffer'
+    fallback: {
+      process: require.resolve('process/browser'),
+      buffer: require.resolve('buffer/'),
     },
   },
   module: {
-    rules: [
-      babelLoaderConfiguration,
-      imageLoaderConfiguration,
-      // You can add more loaders here for CSS, fonts, etc. if needed
-    ],
+    rules: [babelLoaderConfiguration, imageLoaderConfiguration],
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.join(appDirectory, 'web/index.html'), // Path to your HTML template
+      template: path.join(appDirectory, 'web/index.html'),
     }),
+    new webpack.DefinePlugin({
+      __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
+      // Define the entire process.env object for modules that access it directly
+      'process.env': JSON.stringify(process.env), // IMPORTANT: Stringify the entire object
+    }),
+    // If you explicitly need a global `process` object, you can add this:
+    // new webpack.ProvidePlugin({
+    //   process: 'process/browser',
+    //   Buffer: ['buffer', 'Buffer'],
+    // }),
   ],
   devServer: {
     static: {
       directory: path.join(appDirectory, 'web/dist'),
     },
     compress: true,
-    port: 8080, // Port for the development server
-    hot: true, // Enable Hot Module Replacement
+    port: 8080,
+    hot: true,
     allowedHosts: 'all',
   },
-  mode: process.env.NODE_ENV || 'development', // Set mode to development or production
+  mode: process.env.NODE_ENV || 'development',
 };
